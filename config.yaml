@@ -1,0 +1,20 @@
+# This file is in you JUPYTER_CONFIG_DIR.
+# Multiple filesystem sources can be configured
+# with a unique `name` field, the `path` which
+# can include the protocol, or can omit it and
+# provide it as a seperate field `protocol`. 
+# You can also provide `args` such as `key` 
+# and `kwargs` such as `client_kwargs` to
+# the filesystem. More details can be found at https://jupyter-fsspec.readthedocs.io/en/latest/#config-file.
+
+ sources:
+ - name: test
+   path: memory://mytests
+ - name: test1
+   path: /Users
+   protocol: file
+ - name: "Conda Stats"
+   path: "s3://anaconda-package-data/conda/hourly/"
+   kwargs:
+     anon: True
+

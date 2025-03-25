@@ -1,0 +1,34 @@
+import subprocess
+import time
+
+import pytest
+import requests
+
+from pyscript_demo import client
+
+
+@pytest.fixture()
+def server():
+    # TODO: test config in "PYSCRIPTFS_CONFIG"
+    P = subprocess.Popen(["fastapi", "dev", "pyscript_demo/bytes_server.py"])
+    s = "http://127.0.0.1:8000"
+    count = 5
+    while True:
+        try:
+            requests.get(f"{s}/health")
+            break
+        except OSError:
+            if count < 0:
+                raise
+        count -= 1
+        time.sleep(0.1)
+    yield f"{s}/api"
+    P.terminate()
+    P.wait()
+
+
+@pytest.fixture()
+def fs(server):
+    return client.PyscriptFileSystem(server)
+
+

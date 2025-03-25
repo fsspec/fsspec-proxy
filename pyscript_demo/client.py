@@ -1,0 +1,84 @@
+import logging
+
+import fsspec.utils
+from fsspec.spec import AbstractFileSystem, AbstractBufferedFile
+from fsspec.implementations.http_sync import RequestsSessionShim
+
+logger = logging.getLogger("pyscript_demo.client")
+fsspec.utils.setup_logging(logger=logger)
+
+
+class PyscriptFileSystem(AbstractFileSystem):
+    protocol = "pyscript"
+
+    def __init__(self, base_url="http://127.0.0.1:8000/api"):
+        super().__init__()
+        self.base_url = base_url
+        self._session = None
+
+    def _split_path(self, path):
+        key, *relpath = path.split("/", 1)
+        return key, relpath[0] if relpath else ""
+
+    @property
+    def session(self):
+        if self._session is None:
+            try:
+                import js  # noqa: F401
+                self._session = RequestsSessionShim()
+            except (ImportError, ModuleNotFoundError):
+                import requests
+                self._session = requests.Session()
+        return self._session
+
+    def _call(self, path, method="GET", range=None, binary=False, **kw):
+        logger.debug("request: %s %s %s %s", path, method, kw, range)
+        headers = {}
+        if range:
+            headers["Range"] = f"bytes={range[0]}-{range[1]}"
+        r = self.session.request(
+            method, f"{self.base_url}/{path}", params=kw, headers=headers
+        )
+        if r.status_code == 404:
+            raise FileNotFoundError(path)
+        r.raise_for_status()
+        if binary:
+            return r.content
+        return r.json()["contents"]
+
+    def ls(self, path, detail=True, **kwargs):
+        path = self._strip_protocol(path)
+        key, *path =  path.split("/", 1)
+        if key:
+            part = path[0] if path else ""
+            out = self._call(f"list/{key}/{part}")
+        else:
+            out = self._call(f"list")
+
+        if detail:
+            return out
+        return sorted(_["name"] for _ in out)
+
+    def _open(
+        self,
+        path,
+        mode="rb",
+        block_size=None,
+        autocommit=True,
+        cache_options=None,
+        **kwargs,
+    ):
+        return JFile(self, path, mode, block_size, autocommit, cache_options, **kwargs)
+
+    def cat_file(self, path, start=None, end=None, **kw):
+        key, relpath = self._split_path(path)
+        if start is not None and end is not None:
+            range = (start, end + 1)
+        else:
+            range = None
+        return self._call(f"bytes/{key}/{relpath}", binary=True, range=range)
+
+
+class JFile(AbstractBufferedFile):
+    def _fetch_range(self, start, end):
+        return self.fs.cat_file(self.path, start, end)

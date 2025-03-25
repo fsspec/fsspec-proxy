@@ -42,7 +42,10 @@ app = fastapi.FastAPI(lifespan=lifespan)
 #              _reverse_proxy, ["GET", "POST", "PUT", "DELETE"])
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*']
+    allow_origins=['https://martindurant.pyscriptapps.com'],
+    allow_methods=["GET", "POST", "DELETE", "OPTION", "PUT"],
+    allow_credentials=True,
+    allow_headers=["*"]
 )
 
 
@@ -83,7 +86,7 @@ async def get_bytes(key, path, request: fastapi.Request):
         raise fastapi.HTTPException(status_code=404, detail="Item not found")
     path = f"{fs_info['path'].rstrip('/')}/{path.lstrip('/')}"
     try:
-        out = await fs_info["instance"]._cat_file(path, start, end)
+        out = await fs_info["instance"]._cat_file(path, start=start, end=end)
     except FileNotFoundError:
         raise fastapi.HTTPException(status_code=404, detail="Item not found")
     return StreamingResponse(io.BytesIO(out), media_type="application/octet-stream")

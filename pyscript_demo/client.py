@@ -44,7 +44,8 @@ class PyscriptFileSystem(AbstractFileSystem):
         r.raise_for_status()
         if binary:
             return r.content
-        return r.json()["contents"]
+        j = r.json() if callable(r.json) else r.json  # inconsistency in shim - to fix!
+        return j["contents"]
 
     def ls(self, path, detail=True, **kwargs):
         path = self._strip_protocol(path)
@@ -82,3 +83,6 @@ class PyscriptFileSystem(AbstractFileSystem):
 class JFile(AbstractBufferedFile):
     def _fetch_range(self, start, end):
         return self.fs.cat_file(self.path, start, end)
+
+
+fsspec.register_implementation("pyscript", PyscriptFileSystem)

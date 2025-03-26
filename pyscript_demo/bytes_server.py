@@ -115,15 +115,6 @@ def _process_range(range):
     return start, end
 
 
-
-@app.options("/api/{path:path}")
-async def make_cors(path, response: fastapi.Response):
-    # TODO: check key is in config
-    response.headers["Access-Control-Allow-Origin"] = "*"  # or set to
-    response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS, PUT, DELETE"
-    response.status_code = 204
-
-
 @app.get("/health")
 async def ok():
     return {"status": "ok"}

@@ -93,7 +93,7 @@ async def get_bytes(key, path, request: fastapi.Request):
 
 
 @app.post("/api/bytes/{key}/{path:path}")
-async def get_bytes(key, path, request: fastapi.Request, response: fastapi.Response):
+async def put_bytes(key, path, request: fastapi.Request, response: fastapi.Response):
     fs_info = app.manager.get_filesystem(key)
     if fs_info is None:
         raise fastapi.HTTPException(status_code=404, detail="Item not found")

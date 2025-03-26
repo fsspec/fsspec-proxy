@@ -9,7 +9,7 @@ from pyscript_demo import client
 
 @pytest.fixture()
 def server():
-    # TODO: test config in "PYSCRIPTFS_CONFIG"
+    # TODO: test config in "PYSCRIPTFS_CONFIG" location
     P = subprocess.Popen(["fastapi", "dev", "pyscript_demo/bytes_server.py"])
     s = "http://127.0.0.1:8000"
     count = 5
@@ -32,3 +32,8 @@ def fs(server):
     return client.PyscriptFileSystem(server)
 
 
+def test_file(fs):
+    with fs.open("test/afile", "wb") as f:
+        f.write(b"hello")
+    with fs.open("test/afile", "rb") as f:
+        assert f.read() == b"hello"

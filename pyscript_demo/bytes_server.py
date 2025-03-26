@@ -92,6 +92,22 @@ async def get_bytes(key, path, request: fastapi.Request):
     return StreamingResponse(io.BytesIO(out), media_type="application/octet-stream")
 
 
+@app.post("/api/bytes/{key}/{path:path}")
+async def get_bytes(key, path, request: fastapi.Request, response: fastapi.Response):
+    fs_info = app.manager.get_filesystem(key)
+    if fs_info is None:
+        raise fastapi.HTTPException(status_code=404, detail="Item not found")
+    path = f"{fs_info['path'].rstrip('/')}/{path.lstrip('/')}"
+    data = await request.body()
+    print("####", data)
+    try:
+        await fs_info["instance"]._pipe_file(path, data)
+    except FileNotFoundError:
+        raise fastapi.HTTPException(status_code=404, detail="Item not found")
+    response.status_code = 201
+    return {"contents": []}
+
+
 @app.post("/api/config")
 async def setup(request: fastapi.Request):
     app.manager.config = request.json()
@@ -117,4 +133,4 @@ def _process_range(range):
 
 @app.get("/health")
 async def ok():
-    return {"status": "ok"}
+    return {"status": "ok", "contents": []}

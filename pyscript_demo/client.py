@@ -31,13 +31,14 @@ class PyscriptFileSystem(AbstractFileSystem):
                 self._session = requests.Session()
         return self._session
 
-    def _call(self, path, method="GET", range=None, binary=False, **kw):
+    def _call(self, path, method="GET", range=None, binary=False, data=None, **kw):
         logger.debug("request: %s %s %s %s", path, method, kw, range)
         headers = {}
         if range:
             headers["Range"] = f"bytes={range[0]}-{range[1]}"
         r = self.session.request(
-            method, f"{self.base_url}/{path}", params=kw, headers=headers
+            method, f"{self.base_url}/{path}", params=kw, headers=headers,
+            data=data
         )
         if r.status_code == 404:
             raise FileNotFoundError(path)
@@ -79,10 +80,18 @@ class PyscriptFileSystem(AbstractFileSystem):
             range = None
         return self._call(f"bytes/{key}/{relpath}", binary=True, range=range)
 
+    def pipe_file(self, path, value, mode="overwrite", **kwargs):
+        key, relpath = self._split_path(path)
+        self._call(f"bytes/{key}/{relpath}", method="POST", data=value)
 
 class JFile(AbstractBufferedFile):
     def _fetch_range(self, start, end):
         return self.fs.cat_file(self.path, start, end)
 
+    def _upload_chunk(self, final=False):
+        if final:
+            self.fs.pipe_file(self.path, self.buffer.getvalue())
+            return True
+        return False
 
 fsspec.register_implementation("pyscript", PyscriptFileSystem)

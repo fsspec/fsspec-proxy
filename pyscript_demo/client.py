@@ -61,6 +61,11 @@ class PyscriptFileSystem(AbstractFileSystem):
             return out
         return sorted(_["name"] for _ in out)
 
+    def rm_file(self, path):
+        path = self._strip_protocol(path)
+        key, path =  path.split("/", 1)
+        self._call(f"delete/{key}/{path}", method="DELETE", binary=True)
+
     def _open(
         self,
         path,

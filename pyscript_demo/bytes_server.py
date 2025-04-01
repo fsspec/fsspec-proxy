@@ -78,6 +78,21 @@ async def list_dir(key, path):
     return {"status": "ok", "contents": out}
 
 
+@app.delete("/api/delete/{key}/{path:path}")
+async def delete_file(key, path, response: fastapi.Response):
+    fs_info = app.manager.get_filesystem(key)
+    path = f"{fs_info['path'].rstrip('/')}/{path.lstrip('/')}"
+    if fs_info is None:
+        raise fastapi.HTTPException(status_code=404, detail="Item not found")
+    try:
+        out = await fs_info["instance"]._rm_file(path)
+    except FileNotFoundError:
+        raise fastapi.HTTPException(status_code=404, detail="Item not found")
+    except PermissionError:
+        raise fastapi.HTTPException(status_code=403, detail="Not Allowed")
+    response.status_code = 204
+
+
 @app.get("/api/bytes/{key}/{path:path}")
 async def get_bytes(key, path, request: fastapi.Request):
     start, end = _process_range(request.headers.get("Range"))

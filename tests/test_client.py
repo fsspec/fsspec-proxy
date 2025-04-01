@@ -35,5 +35,8 @@ def fs(server):
 def test_file(fs):
     with fs.open("test/afile", "wb") as f:
         f.write(b"hello")
+    assert fs.exists("test/afile")
     with fs.open("test/afile", "rb") as f:
         assert f.read() == b"hello"
+    fs.rm("test/afile")
+    assert not fs.exists("test/afile")

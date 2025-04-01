@@ -84,6 +84,8 @@ async def delete_file(key, path, response: fastapi.Response):
     path = f"{fs_info['path'].rstrip('/')}/{path.lstrip('/')}"
     if fs_info is None:
         raise fastapi.HTTPException(status_code=404, detail="Item not found")
+    if fs_info.get("readonly"):
+        raise fastapi.HTTPException(status_code=403, detail="Not Allowed")
     try:
         out = await fs_info["instance"]._rm_file(path)
     except FileNotFoundError:
@@ -112,6 +114,8 @@ async def put_bytes(key, path, request: fastapi.Request, response: fastapi.Respo
     fs_info = app.manager.get_filesystem(key)
     if fs_info is None:
         raise fastapi.HTTPException(status_code=404, detail="Item not found")
+    if fs_info.get("readonly"):
+        raise fastapi.HTTPException(status_code=403, detail="Not Allowed")
     path = f"{fs_info['path'].rstrip('/')}/{path.lstrip('/')}"
     data = await request.body()
     print("####", data)
@@ -125,7 +129,7 @@ async def put_bytes(key, path, request: fastapi.Request, response: fastapi.Respo
 
 @app.post("/api/config")
 async def setup(request: fastapi.Request):
-    app.manager.config = request.json()
+    app.manager.config = await request.json()
     app.manager.initialize_filesystems()
 
 

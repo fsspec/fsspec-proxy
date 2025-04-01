@@ -40,3 +40,11 @@ def test_file(fs):
         assert f.read() == b"hello"
     fs.rm("test/afile")
     assert not fs.exists("test/afile")
+
+
+def test_config(fs):
+    out = fs.ls("", detail=False)
+    assert out == ["Conda Stats", "test", "test1"]
+    fs.reconfigure({"sources": [{"name": "mem", "path": "memory://"}]})
+    out = fs.ls("", detail=False)
+    assert out == ["mem"]

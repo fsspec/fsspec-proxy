@@ -31,17 +31,19 @@ class PyscriptFileSystem(AbstractFileSystem):
                 self._session = requests.Session()
         return self._session
 
-    def _call(self, path, method="GET", range=None, binary=False, data=None, **kw):
+    def _call(self, path, method="GET", range=None, binary=False, data=None, json=None, **kw):
         logger.debug("request: %s %s %s %s", path, method, kw, range)
         headers = {}
         if range:
             headers["Range"] = f"bytes={range[0]}-{range[1]}"
         r = self.session.request(
             method, f"{self.base_url}/{path}", params=kw, headers=headers,
-            data=data
+            data=data, json=json
         )
         if r.status_code == 404:
             raise FileNotFoundError(path)
+        if r.status_code == 403:
+            raise PermissionError
         r.raise_for_status()
         if binary:
             return r.content
@@ -88,6 +90,15 @@ class PyscriptFileSystem(AbstractFileSystem):
     def pipe_file(self, path, value, mode="overwrite", **kwargs):
         key, relpath = self._split_path(path)
         self._call(f"bytes/{key}/{relpath}", method="POST", data=value)
+
+    def reconfigure(self, config):
+        # only privileged identities can do this
+        if not "sources" in config:
+            raise ValueError("Bad config")
+        if not ["name" in _ and "path" in _ for _ in config["sources"]]:
+            raise ValueError("Bad config")
+        self._call(f"config", method="POST", json=config, binary=True)
+
 
 class JFile(AbstractBufferedFile):
     def _fetch_range(self, start, end):

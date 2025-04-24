@@ -51,6 +51,7 @@ class FileSystemManager:
             try:
                 fs, url2 = fsspec.url_to_fs(fs_path, **kwargs)
             except Exception:
+                # or we could still list show their names but not the contents
                 logger.error("Instantiating filesystem failed")
                 continue
             if not fs.async_impl:

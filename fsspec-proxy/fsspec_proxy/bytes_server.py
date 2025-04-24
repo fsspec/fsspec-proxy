@@ -4,30 +4,7 @@ import fastapi
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import StreamingResponse
 
-from pyscript_demo import file_manager
-
-
-# docs: https://www.python-httpx.org/async/
-# from starlette.requests import Request
-# from starlette.background import BackgroundTask
-# import httpx
-#
-# this is the target API; default base is optional
-# client = httpx.AsyncClient(base_url="http://containername:7800/")
-#
-# async def _reverse_proxy(request: Request):
-#     url = httpx.URL(path=request.url.path,  # setup any URL here
-#                     query=request.url.query.encode("utf-8"))  # encode path, since it was decoded for us
-#     rp_req = client.build_request(request.method, url,
-#                                   headers=request.headers.raw,
-#                                   content=request.stream()) # streams incoming request to target
-#     rp_resp = await client.send(rp_req, stream=True)
-#     return StreamingResponse(
-#         rp_resp.aiter_raw(),  # streams response back to caller in chunks
-#         status_code=rp_resp.status_code,
-#         headers=rp_resp.headers,  # might need to edit headers, but include encoding
-#         background=BackgroundTask(rp_resp.aclose),  # what to do when finished
-#     )
+from fsspec_proxy import file_manager
 
 
 @asynccontextmanager
@@ -129,6 +106,8 @@ async def put_bytes(key, path, request: fastapi.Request, response: fastapi.Respo
 
 @app.post("/api/config")
 async def setup(request: fastapi.Request):
+    if not app.manager.config.get("allow_reload", False):
+        raise fastapi.HTTPException(status_code=403, detail="Not Allowed")
     app.manager.config = await request.json()
     app.manager.initialize_filesystems()
 

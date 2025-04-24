@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling>=1.5.0", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fsspec-proxy"
+authors = [
+    {name = "martindurant"},
+]
+readme = "../README.md"
+license = { file = "../LICENSE" }
+requires-python = ">=3.9"
+classifiers = [
+    # "Framework :: PyScript",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "fsspec>=2025.3.0",
+    "fastapi"
+]
+dynamic = ["version", "description", "urls", "keywords"]
+
+[project.optional-dependencies]
+test = ["anaconda-cloud-storage", "s3fs"]
+
+[tool.hatch.build.hooks.version]
+path = "fsspec_proxy/_version.py"
+
+[tool.hatch.version]
+source = "vcs"
+path = "fsspec_proxy/__init__.py"
+
+[tool.hatch.version.raw-options]
+root = ".."
+
+[tool.check-wheel-contents]
+ignore = ["W002"]
+
+[project.scripts]
+fsspec-proxy = "fsspec_proxy.__main__:run_main"

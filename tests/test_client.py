@@ -4,13 +4,13 @@ import time
 import pytest
 import requests
 
-from pyscript_demo import client
+from pyscript_client import client
 
 
 @pytest.fixture()
 def server():
     # TODO: test config in "PYSCRIPTFS_CONFIG" location
-    P = subprocess.Popen(["fastapi", "dev", "pyscript_demo/bytes_server.py"])
+    P = subprocess.Popen(["fsspec-proxy", "dev"])
     s = "http://127.0.0.1:8000"
     count = 5
     while True:
@@ -33,18 +33,18 @@ def fs(server):
 
 
 def test_file(fs):
-    with fs.open("test/afile", "wb") as f:
+    with fs.open("inmemory/afile", "wb") as f:
         f.write(b"hello")
-    assert fs.exists("test/afile")
-    with fs.open("test/afile", "rb") as f:
+    assert fs.exists("inmemory/afile")
+    with fs.open("inmemory/afile", "rb") as f:
         assert f.read() == b"hello"
-    fs.rm("test/afile")
-    assert not fs.exists("test/afile")
+    fs.rm("inmemory/afile")
+    assert not fs.exists("inmemory/afile")
 
 
 def test_config(fs):
     out = fs.ls("", detail=False)
-    assert out == ["Conda Stats", "test", "test1"]
+    assert out == ["Conda Stats", "MyAnaconda", "inmemory", "local"]
     fs.reconfigure({"sources": [{"name": "mem", "path": "memory://"}]})
     out = fs.ls("", detail=False)
     assert out == ["mem"]

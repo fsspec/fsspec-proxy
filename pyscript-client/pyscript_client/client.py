@@ -1,17 +1,19 @@
+import os
 import logging
 
 import fsspec.utils
 from fsspec.spec import AbstractFileSystem, AbstractBufferedFile
 from fsspec.implementations.http_sync import RequestsSessionShim
 
-logger = logging.getLogger("pyscript_demo.client")
+logger = logging.getLogger("pyscript_client")
 fsspec.utils.setup_logging(logger=logger)
+default_endpoint =  os.getenv("FSSPEC_PROXY_URL", "http://127.0.0.1:8000/api")
 
 
 class PyscriptFileSystem(AbstractFileSystem):
     protocol = "pyscript"
 
-    def __init__(self, base_url="http://127.0.0.1:8000/api"):
+    def __init__(self, base_url=default_endpoint):
         super().__init__()
         self.base_url = base_url
         self._session = None

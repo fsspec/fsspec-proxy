@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.WARNING, stream=sys.stdout)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 fsspec.utils.setup_logging(logger_name="fsspec.memoryfs")
+this_dir = os.path.abspath(os.path.dirname(__file__))
 
 
 class FileSystemManager:
@@ -20,7 +21,7 @@ class FileSystemManager:
             self.config = self.load_config()
         self.initialize_filesystems()
 
-    def load_config(self, config_path="config.yaml"):
+    def load_config(self, config_path=os.path.join(this_dir, "config.yaml")):
         if not os.path.exists(config_path):
             return {}
         with open(config_path, "r") as file:

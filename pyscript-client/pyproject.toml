@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling>=1.5.0", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyscript-client"
+authors = [
+    {name = "martindurant"},
+]
+readme = "../README.md"
+license = { file = "../LICENSE" }
+requires-python = ">=3.9"
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "fsspec>=2025.3.0"
+]
+dynamic = ["version", "description", "urls", "keywords"]
+
+[tool.hatch.build.hooks.version]
+path = "pyscript_client/_version.py"
+
+[tool.hatch.version]
+source = "vcs"
+path = "pyscript_client/__init__.py"
+
+[tool.hatch.version.raw-options]
+root = ".."
+
+[tool.check-wheel-contents]
+ignore = ["W002"]

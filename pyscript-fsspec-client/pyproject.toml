@@ -25,6 +25,9 @@ dependencies = [
 ]
 dynamic = ["version", "description", "urls", "keywords"]
 
+[project.optional-dependencies]
+test = ["requests", "pytest"]
+
 [tool.hatch.build.hooks.version]
 path = "pyscript_fsspec_client/_version.py"
 

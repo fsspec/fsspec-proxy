@@ -31,4 +31,4 @@ jobs:
           pip install ./fsspec-proxy
           pip install ./pyscript-fsspec-client[test]
       - name: test
-        run: pytest -v
+        run: pytest -v -s

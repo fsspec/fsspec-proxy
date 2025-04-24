@@ -50,7 +50,7 @@ class FileSystemManager:
 
             try:
                 fs, url2 = fsspec.url_to_fs(fs_path, **kwargs)
-            except ImportError:
+            except Exception:
                 logger.error("Instantiating filesystem failed")
                 continue
             if not fs.async_impl:

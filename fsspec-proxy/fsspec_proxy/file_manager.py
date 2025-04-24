@@ -48,7 +48,11 @@ class FileSystemManager:
             fs_path = fs_config["path"]
             kwargs = fs_config.get("kwargs", {})
 
-            fs, url2 = fsspec.url_to_fs(fs_path, **kwargs)
+            try:
+                fs, url2 = fsspec.url_to_fs(fs_path, **kwargs)
+            except ImportError:
+                logger.error("Instantiating filesystem failed")
+                continue
             if not fs.async_impl:
                 fs = AsyncFileSystemWrapper(fs)
 

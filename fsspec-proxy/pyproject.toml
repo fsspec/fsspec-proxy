@@ -23,7 +23,8 @@ classifiers = [
 ]
 dependencies = [
     "fsspec>=2025.3.0",
-    "fastapi-cli"
+    "fastapi-cli",
+    "fastapi"
 ]
 dynamic = ["version", "description", "urls", "keywords"]
 

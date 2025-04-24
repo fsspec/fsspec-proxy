@@ -7,7 +7,7 @@ import requests
 from pyscript_fsspec_client import client
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def server():
     # TODO: test config in "FSSPEC_PROXY_CONFIG" location
     P = subprocess.Popen(["fsspec-proxy", "dev"])

@@ -1,31 +1,32 @@
 from fsspec.implementations.asyn_wrapper import AsyncFileSystemWrapper
 import fsspec.utils
+import io
 import os
-import sys
+import pkgutil
 import yaml
 import logging
 
-logging.basicConfig(level=logging.WARNING, stream=sys.stdout)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-fsspec.utils.setup_logging(logger_name="fsspec.memoryfs")
-this_dir = os.path.abspath(os.path.dirname(__file__))
+logger = logging.getLogger("fsspec_proxy")
 
 
 class FileSystemManager:
-    def __init__(self):
+    def __init__(self, config_path=None):
         self.filesystems = {}
-        if "FSSPEC_PROXY_CONFIG" in os.environ:
+        if config_path is None and "FSSPEC_PROXY_CONFIG" in os.environ:
             self.config = self.load_config(os.getenv("FSSPEC_PROXY_CONFIG"))
         else:
             self.config = self.load_config()
         self.initialize_filesystems()
 
-    def load_config(self, config_path=os.path.join(this_dir, "config.yaml")):
-        if not os.path.exists(config_path):
+    def load_config(self, config_path=None):
+        if config_path is None:
+            data = pkgutil.get_data(__name__, "config.yaml")
+        elif not os.path.exists(config_path):
             return {}
-        with open(config_path, "r") as file:
-            config_content = yaml.safe_load(file)
+        else:
+            with open(config_path, "rb") as file:
+                data = file.read()
+        config_content = yaml.safe_load(io.BytesIO(data))
         logger.info("new config: %s", config_content)
         return config_content
 

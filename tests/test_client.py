@@ -17,7 +17,7 @@ def server():
         try:
             requests.get(f"{s}/health")
             break
-        except Exception:
+        except BaseException:
             if count < 0:
                 raise
         count -= 1

@@ -2,25 +2,35 @@ from fsspec.implementations.asyn_wrapper import AsyncFileSystemWrapper
 import fsspec.utils
 import io
 import os
-import pkgutil
 import yaml
 import logging
 
 logger = logging.getLogger("fsspec_proxy")
-
+default_config = b"""sources:
+ - name: inmemory
+   path: memory://mytests
+ - name: local
+   path: file:///Users
+   readonly: true
+ - name: "Conda Stats"
+   path: "s3://anaconda-package-data/conda/hourly/"
+   kwargs:
+     anon: True
+ - name: "MyAnaconda"
+   path: "anaconda://my/"
+allow_reload: true
+"""
 
 class FileSystemManager:
     def __init__(self, config_path=None):
         self.filesystems = {}
-        if config_path is None and "FSSPEC_PROXY_CONFIG" in os.environ:
-            self.config = self.load_config(os.getenv("FSSPEC_PROXY_CONFIG"))
-        else:
-            self.config = self.load_config()
+        config_path = config_path or os.getenv("FSSPEC_PROXY_CONFIG", None)
+        self.config = self.load_config(config_path)
         self.initialize_filesystems()
 
     def load_config(self, config_path=None):
         if config_path is None:
-            data = pkgutil.get_data(__name__, "config.yaml")
+            data = default_config
         elif not os.path.exists(config_path):
             return {}
         else:

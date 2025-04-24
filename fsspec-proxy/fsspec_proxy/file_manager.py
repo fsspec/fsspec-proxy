@@ -15,8 +15,8 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 class FileSystemManager:
     def __init__(self):
         self.filesystems = {}
-        if "PYSCRIPTFS_CONFIG" in os.environ:
-            self.config = self.load_config(os.getenv("PYSCRIPTFS_CONFIG"))
+        if "FSSPEC_PROXY_CONFIG" in os.environ:
+            self.config = self.load_config(os.getenv("FSSPEC_PROXY_CONFIG"))
         else:
             self.config = self.load_config()
         self.initialize_filesystems()

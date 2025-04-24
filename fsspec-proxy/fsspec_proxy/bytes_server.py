@@ -15,8 +15,6 @@ async def lifespan(app: fastapi.FastAPI):
 
 
 app = fastapi.FastAPI(lifespan=lifespan)
-#app.add_route("/api/{key}/{path:path}",  # passes through all matching calls
-#              _reverse_proxy, ["GET", "POST", "PUT", "DELETE"])
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['https://martindurant.pyscriptapps.com'],

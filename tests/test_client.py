@@ -4,12 +4,12 @@ import time
 import pytest
 import requests
 
-from pyscript_client import client
+from pyscript_fsspec_client import client
 
 
 @pytest.fixture()
 def server():
-    # TODO: test config in "PYSCRIPTFS_CONFIG" location
+    # TODO: test config in "FSSPEC_PROXY_CONFIG" location
     P = subprocess.Popen(["fsspec-proxy", "dev"])
     s = "http://127.0.0.1:8000"
     count = 5

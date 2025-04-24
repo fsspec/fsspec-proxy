@@ -5,7 +5,7 @@ import fsspec.utils
 from fsspec.spec import AbstractFileSystem, AbstractBufferedFile
 from fsspec.implementations.http_sync import RequestsSessionShim
 
-logger = logging.getLogger("pyscript_client")
+logger = logging.getLogger("pyscript_fsspec_client")
 fsspec.utils.setup_logging(logger=logger)
 default_endpoint =  os.getenv("FSSPEC_PROXY_URL", "http://127.0.0.1:8000/api")
 

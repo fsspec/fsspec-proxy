@@ -4,6 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyscript-fsspec-client"
+description = "get bytes via HTTP from any backend"
 authors = [
     {name = "martindurant"},
 ]

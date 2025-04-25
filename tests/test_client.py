@@ -12,13 +12,15 @@ def server():
     # TODO: test config in "FSSPEC_PROXY_CONFIG" location
     P = subprocess.Popen(["fsspec-proxy"])
     s = "http://localhost:8000"
-    count = 5
+    count = 20
     while True:
         try:
             requests.get(f"{s}/health")
             break
         except BaseException:
             if count < 0:
+                P.terminate()
+                P.wait()
                 raise
         count -= 1
         time.sleep(0.1)

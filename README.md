@@ -21,7 +21,7 @@ Now run:
 $ fsspec-proxy dev
 ```
 to start the (unsecured) proxy server, with port 8000. Further arguments
-will be passed to fastAPI to configure, for example, the post and address
+will be passed to fastAPI to configure, for example, the port and address
 to listen on.
 
 The default config in `config.yaml` has entry "Conda Stats", 

@@ -1,31 +1,42 @@
 from fsspec.implementations.asyn_wrapper import AsyncFileSystemWrapper
 import fsspec.utils
+import io
 import os
-import sys
 import yaml
 import logging
 
-logging.basicConfig(level=logging.WARNING, stream=sys.stdout)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-fsspec.utils.setup_logging(logger_name="fsspec.memoryfs")
-this_dir = os.path.abspath(os.path.dirname(__file__))
-
+logger = logging.getLogger("fsspec_proxy")
+default_config = b"""sources:
+ - name: inmemory
+   path: memory://mytests
+ - name: local
+   path: file:///Users
+   readonly: true
+ - name: "Conda Stats"
+   path: "s3://anaconda-package-data/conda/hourly/"
+   kwargs:
+     anon: True
+ - name: "MyAnaconda"
+   path: "anaconda://my/"
+allow_reload: true
+"""
 
 class FileSystemManager:
-    def __init__(self):
+    def __init__(self, config_path=None):
         self.filesystems = {}
-        if "FSSPEC_PROXY_CONFIG" in os.environ:
-            self.config = self.load_config(os.getenv("FSSPEC_PROXY_CONFIG"))
-        else:
-            self.config = self.load_config()
+        config_path = config_path or os.getenv("FSSPEC_PROXY_CONFIG", None)
+        self.config = self.load_config(config_path)
         self.initialize_filesystems()
 
-    def load_config(self, config_path=os.path.join(this_dir, "config.yaml")):
-        if not os.path.exists(config_path):
+    def load_config(self, config_path=None):
+        if config_path is None:
+            data = default_config
+        elif not os.path.exists(config_path):
             return {}
-        with open(config_path, "r") as file:
-            config_content = yaml.safe_load(file)
+        else:
+            with open(config_path, "rb") as file:
+                data = file.read()
+        config_content = yaml.safe_load(io.BytesIO(data))
         logger.info("new config: %s", config_content)
         return config_content
 
@@ -37,7 +48,12 @@ class FileSystemManager:
             fs_path = fs_config["path"]
             kwargs = fs_config.get("kwargs", {})
 
-            fs, url2 = fsspec.url_to_fs(fs_path, **kwargs)
+            try:
+                fs, url2 = fsspec.url_to_fs(fs_path, **kwargs)
+            except Exception:
+                # or we could still list show their names but not the contents
+                logger.error("Instantiating filesystem failed")
+                continue
             if not fs.async_impl:
                 fs = AsyncFileSystemWrapper(fs)
 

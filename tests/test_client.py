@@ -7,18 +7,20 @@ import requests
 from pyscript_fsspec_client import client
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def server():
     # TODO: test config in "FSSPEC_PROXY_CONFIG" location
-    P = subprocess.Popen(["fsspec-proxy", "dev"])
-    s = "http://127.0.0.1:8000"
-    count = 5
+    P = subprocess.Popen(["fsspec-proxy"])
+    s = "http://localhost:8000"
+    count = 20
     while True:
         try:
             requests.get(f"{s}/health")
             break
-        except OSError:
+        except BaseException:
             if count < 0:
+                P.terminate()
+                P.wait()
                 raise
         count -= 1
         time.sleep(0.1)
@@ -44,7 +46,7 @@ def test_file(fs):
 
 def test_config(fs):
     out = fs.ls("", detail=False)
-    assert out == ["Conda Stats", "MyAnaconda", "inmemory", "local"]
+    assert "inmemory" in out and "local" in out  # other spaces might fail
     fs.reconfigure({"sources": [{"name": "mem", "path": "memory://"}]})
     out = fs.ls("", detail=False)
     assert out == ["mem"]

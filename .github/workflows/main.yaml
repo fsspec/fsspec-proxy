@@ -28,7 +28,7 @@ jobs:
           python-version: ${{ matrix.PY }}
       - name: Install
         run: |
-          pip install ./fsspec-proxy
-          pip install ./pyscript-fsspec-client[test]
+          pip install -e ./fsspec-proxy
+          pip install -e ./pyscript-fsspec-client[test]
       - name: test
-        run: pytest -v
+        run: pytest -v -s

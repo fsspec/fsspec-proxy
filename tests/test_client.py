@@ -11,7 +11,7 @@ from pyscript_fsspec_client import client
 def server():
     # TODO: test config in "FSSPEC_PROXY_CONFIG" location
     P = subprocess.Popen(["fsspec-proxy", "dev"])
-    s = "http://127.0.0.1:8000"
+    s = "http://localhost:8000"
     count = 5
     while True:
         try:

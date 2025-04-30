@@ -27,7 +27,7 @@ dependencies = [
     "fastapi-cli",
     "fastapi"
 ]
-dynamic = ["version",, "urls", "keywords"]
+dynamic = ["version", "urls", "keywords"]
 
 [project.optional-dependencies]
 test = ["anaconda-cloud-storage", "s3fs"]

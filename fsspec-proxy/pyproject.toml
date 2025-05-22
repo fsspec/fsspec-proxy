@@ -29,7 +29,7 @@ dependencies = [
 ]
 dynamic = ["version", "urls", "keywords"]
 
-[project.optional-dependencies]
+[dependency-groups]
 s3 = [
     "s3fs"
 ]
@@ -37,8 +37,8 @@ anaconda = [
     "anaconda-cloud-storage"
 ]
 all = [
-    ".[s3]",
-    ".[anaconda]"
+    {include-group = "s3"},
+    {include-group = "anaconda"}
 ]
 
 [tool.hatch.build.hooks.version]

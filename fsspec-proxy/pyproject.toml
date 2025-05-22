@@ -37,8 +37,8 @@ anaconda = [
     "anaconda-cloud-storage"
 ]
 all = [
-    "s3fs",
-    "anaconda-cloud-storage"
+    ".[s3]",
+    ".[anaconda]"
 ]
 
 [tool.hatch.build.hooks.version]

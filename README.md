@@ -38,3 +38,37 @@ Demo
 
 With the server running locally, 
 now navigate to: https://martindurant.pyscriptapps.com/empty-tundra/latest/
+
+Installation with Optional Dependencies (fsspec-proxy)
+-----------------------------------------------------
+
+The following steps apply only to the `fsspec-proxy` package. The package has
+several optional dependency groups:
+
+- `s3`: Required for S3 access (needed for the "Conda Stats" example)
+- `anaconda`: Required for Anaconda Cloud access
+- `all`: All optional dependencies
+
+To install dependencies from Anaconda Cloud (like `anaconda-cloud-storage`),
+configure pip to use the Anaconda Cloud index as an extra source. Create (or
+edit) the file `~/.config/pip/pip.conf` (on macOS/Linux) or
+`%APPDATA%\pip\pip.ini` (on Windows) and add:
+
+    [global]
+    extra-index-url = https://pypi.anaconda.org/anaconda-cloud/simple
+
+Then install the desired optional dependencies:
+
+```bash
+# For S3 support (including the "Conda Stats" example)
+pip install .[s3]
+
+# For Anaconda Cloud support
+pip install .[anaconda]
+
+# For all optional dependencies
+pip install .[all]
+```
+
+This will ensure that all required packages for `fsspec-proxy`, including those
+only available on Anaconda Cloud, are installed.

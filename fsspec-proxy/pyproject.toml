@@ -30,7 +30,16 @@ dependencies = [
 dynamic = ["version", "urls", "keywords"]
 
 [project.optional-dependencies]
-test = ["anaconda-cloud-storage", "s3fs"]
+s3 = [
+    "s3fs"
+]
+anaconda = [
+    "anaconda-cloud-storage"
+]
+all = [
+    "s3fs",
+    "anaconda-cloud-storage"
+]
 
 [tool.hatch.build.hooks.version]
 path = "fsspec_proxy/_version.py"

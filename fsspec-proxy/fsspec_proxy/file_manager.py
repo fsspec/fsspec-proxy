@@ -22,13 +22,22 @@ allow_reload: true
 """
 
 class FileSystemManager:
+    """
+    Holds configured fsspec instances
+    """
+
     def __init__(self, config_path=None):
+        """
+
+        :param config_path: if NONE, loads config from FSSPEC_PROXY_CONFIG
+        """
         self.filesystems = {}
         config_path = config_path or os.getenv("FSSPEC_PROXY_CONFIG", None)
         self.config = self.load_config(config_path)
         self.initialize_filesystems()
 
     def load_config(self, config_path=None):
+        """Reset the config"""
         if config_path is None:
             data = default_config
         elif not os.path.exists(config_path):
@@ -41,6 +50,7 @@ class FileSystemManager:
         return config_content
 
     def initialize_filesystems(self):
+        """Create filesystem instances"""
         new_filesystems = {}
 
         for fs_config in self.config.get("sources", []):
@@ -66,4 +76,5 @@ class FileSystemManager:
         self.filesystems = new_filesystems
 
     def get_filesystem(self, key):
+        """Get filesystem instance by configured name"""
         return self.filesystems.get(key)

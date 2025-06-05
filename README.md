@@ -38,3 +38,7 @@ Demo
 
 With the server running locally, 
 now navigate to: https://martindurant.pyscriptapps.com/empty-tundra/latest/
+
+The server will show incoming byte range requests, and you can also track them
+in the browser's debug console. The end result should be a table view of the
+contents of the target parquet file. 

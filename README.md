@@ -42,3 +42,64 @@ now navigate to: https://martindurant.pyscriptapps.com/empty-tundra/latest/
 The server will show incoming byte range requests, and you can also track them
 in the browser's debug console. The end result should be a table view of the
 contents of the target parquet file. 
+
+Installation with Optional Dependencies (fsspec-proxy)
+-----------------------------------------------------
+
+The following steps apply only to the `fsspec-proxy` package. The package has
+several optional dependency groups:
+
+- `s3`: Required for S3 access (needed for the "Conda Stats" example)
+- `anaconda`: Required for Anaconda Cloud access
+- `all`: All optional dependencies
+
+S3 Support
+~~~~~~~~~~
+
+To use S3 functionality (including the "Conda Stats" example):
+
+```bash
+pip install .[s3]
+```
+
+Anaconda Cloud Support
+~~~~~~~~~~~~~~~~~~~~~~
+
+To use Anaconda Cloud functionality, you'll need to install dependencies from
+the Anaconda Cloud index. You can do this in two ways:
+
+1. Configure pip to use the Anaconda Cloud index as an extra source. Create (or
+   edit) the file `~/.config/pip/pip.conf` (on macOS/Linux) or
+   `%APPDATA%\pip\pip.ini` (on Windows) and add:
+
+    [global]
+    extra-index-url = https://pypi.anaconda.org/anaconda-cloud/simple
+
+   Then install:
+
+   ```bash
+   pip install .[anaconda]
+   ```
+
+2. Or install directly using pip's `--extra-index-url` option:
+
+   ```bash
+   pip install .[anaconda] --extra-index-url https://pypi.anaconda.org/anaconda-cloud/simple
+   ```
+
+All Optional Dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+To install all optional dependencies:
+
+```bash
+# With pip config
+pip install .[all]
+
+# Or directly with extra index
+pip install .[all] --extra-index-url https://pypi.anaconda.org/anaconda-cloud/simple
+```
+
+This will ensure that all required packages for `fsspec-proxy`, including those
+only available on Anaconda Cloud, are installed.
+>>>>>>> 4408c85bdd76295a43f0d7a20041a646e46b3f25

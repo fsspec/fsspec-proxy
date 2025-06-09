@@ -7,5 +7,5 @@ dependencies:
   - sphinx-rtd-theme
   - fsspec
   - numpydoc
-  - sphinx_design
+  - sphinx-design
   - docutils

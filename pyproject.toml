@@ -1,5 +1,5 @@
 [project]
-name = "fsspec-proxy"
+name = "fsspec-proxy-meta"
 authors = [
     {name = "martindurant"},
 ]

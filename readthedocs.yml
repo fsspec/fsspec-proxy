@@ -11,9 +11,9 @@ conda:
 python:
   install:
     - method: pip
-      path: .
-      extra_requirements:
-        - doc
+      path: ./fsspec-proxy
+    - method: pip
+      path: ./pyscript-fsspec-client
 
 sphinx:
   configuration: docs/source/conf.py

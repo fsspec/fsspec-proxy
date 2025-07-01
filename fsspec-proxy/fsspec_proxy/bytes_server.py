@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 import io
 import fastapi
-from fastapi.middleware.cors import CORSMiddleware
+from fsspec_proxy.cors import CORSMiddleware
 from starlette.responses import StreamingResponse
 
 from fsspec_proxy import file_manager
@@ -62,7 +62,7 @@ async def delete_file(key, path, response: fastapi.Response):
     if fs_info.get("readonly"):
         raise fastapi.HTTPException(status_code=403, detail="Not Allowed")
     try:
-        out = await fs_info["instance"]._rm_file(path)
+        await fs_info["instance"]._rm_file(path)
     except FileNotFoundError:
         raise fastapi.HTTPException(status_code=404, detail="Item not found")
     except PermissionError:
@@ -93,7 +93,6 @@ async def put_bytes(key, path, request: fastapi.Request, response: fastapi.Respo
         raise fastapi.HTTPException(status_code=403, detail="Not Allowed")
     path = f"{fs_info['path'].rstrip('/')}/{path.lstrip('/')}"
     data = await request.body()
-    print("####", data)
     try:
         await fs_info["instance"]._pipe_file(path, data)
     except FileNotFoundError:

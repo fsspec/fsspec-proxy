@@ -14,13 +14,13 @@ Install the two sub-packages:
 - fsspec-proxy, a fastAPI-based server which reads/writes to configured storage
   locations
 - pyscript-fsspec-client, a filesystem implementation that connects to the proxy, 
-  allowing even pyscript to access bytes in remote stores
+  allowing even pyscript to access bytes in remote stores.
 
 Now run:
 ```bash
 $ fsspec-proxy dev
 ```
-to start the (unsecured) proxy server, with port 8000. Further arguments
+This starts the (unsecured) proxy server, with port 8000. Further arguments
 will be passed to fastAPI to configure, for example, the port and address
 to listen on.
 
@@ -33,6 +33,15 @@ server can be reconfigured via an API call.
 or auth. It can be regarded as a prototype to base production-level 
 implementations on.
 
+Options
+-------
+
+- `run` (default) runs the server in production mode
+- `dev` run the server in development mode
+- `private` adds Access-Control-Allow-Private-Network header to allow some
+ requests in some CORS situations. If you are seeing CORS issues, adding
+ this might help.
+
 Demo
 ----
 
@@ -43,27 +52,21 @@ The server will show incoming byte range requests, and you can also track them
 in the browser's debug console. The end result should be a table view of the
 contents of the target parquet file. 
 
-Installation with Optional Dependencies (fsspec-proxy)
------------------------------------------------------
-
-The following steps apply only to the `fsspec-proxy` package. The package has
-several optional dependency groups:
-
-- `s3`: Required for S3 access (needed for the "Conda Stats" example)
-- `anaconda`: Required for Anaconda Cloud access
-- `all`: All optional dependencies
+By default, the server attempts to instantiate S3 and anaconda filesystems,
+but will skip these with a message if the dependencies are not available. The
+demo uses the S3 backend, so you will need S3 support (below). 
 
 S3 Support
-~~~~~~~~~~
+----------
 
 To use S3 functionality (including the "Conda Stats" example):
 
 ```bash
-pip install .[s3]
+pip install "./fsspec-proxy[s3]"
 ```
 
 Anaconda Cloud Support
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 To use Anaconda Cloud functionality, you'll need to install dependencies from
 the Anaconda Cloud index. You can do this in two ways:
@@ -86,20 +89,3 @@ the Anaconda Cloud index. You can do this in two ways:
    ```bash
    pip install .[anaconda] --extra-index-url https://pypi.anaconda.org/anaconda-cloud/simple
    ```
-
-All Optional Dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-To install all optional dependencies:
-
-```bash
-# With pip config
-pip install .[all]
-
-# Or directly with extra index
-pip install .[all] --extra-index-url https://pypi.anaconda.org/anaconda-cloud/simple
-```
-
-This will ensure that all required packages for `fsspec-proxy`, including those
-only available on Anaconda Cloud, are installed.
->>>>>>> 4408c85bdd76295a43f0d7a20041a646e46b3f25

@@ -1,11 +1,14 @@
-from fsspec.implementations.asyn_wrapper import AsyncFileSystemWrapper
-import fsspec.utils
 import io
+import logging
 import os
 import yaml
-import logging
+
+from fsspec.implementations.asyn_wrapper import AsyncFileSystemWrapper
+import fsspec.utils
 
 logger = logging.getLogger("fsspec_proxy")
+# TODO: this config is copied as config.yaml; de-dup and move other options
+#  into the config
 default_config = b"""sources:
  - name: inmemory
    path: memory://mytests
@@ -62,7 +65,7 @@ class FileSystemManager:
                 fs, url2 = fsspec.url_to_fs(fs_path, **kwargs)
             except Exception:
                 # or we could still list show their names but not the contents
-                logger.error("Instantiating filesystem failed")
+                logger.exception("Instantiating filesystem %s failed, skipping", key)
                 continue
             if not fs.async_impl:
                 fs = AsyncFileSystemWrapper(fs)

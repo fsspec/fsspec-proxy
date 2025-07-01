@@ -1,0 +1,14 @@
+sources:
+ - name: inmemory
+   path: memory://mytests
+ - name: local
+   path: file:///Users
+   readonly: true
+ - name: "Conda Stats"
+   path: "s3://anaconda-package-data/conda/hourly/"
+   kwargs:
+     anon: True
+ - name: "MyAnaconda"
+   path: "anaconda://my/"
+allow_reload: true
+

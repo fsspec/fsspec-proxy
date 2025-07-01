@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import re
 import sys
 
@@ -11,7 +12,9 @@ path = fsspec_proxy.bytes_server.__file__
 
 def run_main():
     mode = "dev" if "dev" in sys.argv else "run"
-    argv = [_ for _ in sys.argv if _ not in {"dev", "run"}]
+    # TODO: this should be unified with the config
+    os.environ["FS_PROXY_PRIVATE"] = str("private" in sys.argv)
+    argv = [_ for _ in sys.argv if _ not in {"dev", "run", "private"}]
     sys.argv = [
         re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0]),
         mode,

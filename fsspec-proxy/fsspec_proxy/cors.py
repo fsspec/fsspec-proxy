@@ -1,4 +1,6 @@
-"""Copy of fastapi.middleware.cors, with """
+"""Modified copy of fastapi.middleware.cors,
+
+Adds an option for the Access-Control-Allow-Private-Network header"""
 
 from __future__ import annotations
 

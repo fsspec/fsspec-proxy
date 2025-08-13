@@ -24,7 +24,7 @@ def server():
                 raise
         count -= 1
         time.sleep(0.1)
-    yield f"{s}/api"
+    yield f"{s}"
     P.terminate()
     P.wait()
 
@@ -42,11 +42,3 @@ def test_file(fs):
         assert f.read() == b"hello"
     fs.rm("inmemory/afile")
     assert not fs.exists("inmemory/afile")
-
-
-def test_config(fs):
-    out = fs.ls("", detail=False)
-    assert "inmemory" in out and "local" in out  # other spaces might fail
-    fs.reconfigure({"sources": [{"name": "mem", "path": "memory://"}]})
-    out = fs.ls("", detail=False)
-    assert out == ["mem"]

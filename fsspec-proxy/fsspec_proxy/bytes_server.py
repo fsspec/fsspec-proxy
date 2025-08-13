@@ -7,6 +7,9 @@ from starlette.responses import StreamingResponse
 from fsspec_proxy import file_manager
 
 
+URL_SCHEMA = "{prefix}/{key}/{op}/{path}"
+# where op = bytes | list
+
 @asynccontextmanager
 async def lifespan(app: fastapi.FastAPI):
     # start instances in async context
@@ -24,18 +27,7 @@ app.add_middleware(
 )
 
 
-@app.get("/api/list")
-async def list_root():
-    keys = list(app.manager.filesystems)
-    return {
-        "status": "ok",
-        "contents": [
-            {"name": k, "size": 0, "type": "directory"} for k in keys
-        ]
-    }
-
-
-@app.get("/api/list/{key}/{path:path}")
+@app.get("/{key}/list/{path:path}")
 async def list_dir(key, path):
     fs_info = app.manager.get_filesystem(key)
     if fs_info is None:
@@ -53,7 +45,7 @@ async def list_dir(key, path):
     return {"status": "ok", "contents": out}
 
 
-@app.delete("/api/delete/{key}/{path:path}")
+@app.delete("/{key}/delete/{path:path}")
 async def delete_file(key, path, response: fastapi.Response):
     fs_info = app.manager.get_filesystem(key)
     path = f"{fs_info['path'].rstrip('/')}/{path.lstrip('/')}"
@@ -70,7 +62,7 @@ async def delete_file(key, path, response: fastapi.Response):
     response.status_code = 204
 
 
-@app.get("/api/bytes/{key}/{path:path}")
+@app.get("/{key}/bytes/{path:path}")
 async def get_bytes(key, path, request: fastapi.Request):
     start, end = _process_range(request.headers.get("Range"))
     fs_info = app.manager.get_filesystem(key)
@@ -84,7 +76,7 @@ async def get_bytes(key, path, request: fastapi.Request):
     return StreamingResponse(io.BytesIO(out), media_type="application/octet-stream")
 
 
-@app.post("/api/bytes/{key}/{path:path}")
+@app.post("/{key}/bytes/{path:path}")
 async def put_bytes(key, path, request: fastapi.Request, response: fastapi.Response):
     fs_info = app.manager.get_filesystem(key)
     if fs_info is None:
@@ -99,14 +91,6 @@ async def put_bytes(key, path, request: fastapi.Request, response: fastapi.Respo
         raise fastapi.HTTPException(status_code=404, detail="Item not found")
     response.status_code = 201
     return {"contents": []}
-
-
-@app.post("/api/config")
-async def setup(request: fastapi.Request):
-    if not app.manager.config.get("allow_reload", False):
-        raise fastapi.HTTPException(status_code=403, detail="Not Allowed")
-    app.manager.config = await request.json()
-    app.manager.initialize_filesystems()
 
 
 def _process_range(range):

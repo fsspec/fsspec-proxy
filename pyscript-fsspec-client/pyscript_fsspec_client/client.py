@@ -7,7 +7,7 @@ from fsspec.implementations.http_sync import RequestsSessionShim
 
 logger = logging.getLogger("pyscript_fsspec_client")
 fsspec.utils.setup_logging(logger=logger)
-default_endpoint =  os.getenv("FSSPEC_PROXY_URL", "http://127.0.0.1:8000/api")
+default_endpoint =  os.getenv("FSSPEC_PROXY_URL", "http://127.0.0.1:8000")
 
 
 class PyscriptFileSystem(AbstractFileSystem):
@@ -57,9 +57,9 @@ class PyscriptFileSystem(AbstractFileSystem):
         key, *path =  path.split("/", 1)
         if key:
             part = path[0] if path else ""
-            out = self._call(f"list/{key}/{part}")
+            out = self._call(f"{key}/list/{part}")
         else:
-            out = self._call(f"list")
+            raise ValueError
 
         if detail:
             return out
@@ -68,7 +68,7 @@ class PyscriptFileSystem(AbstractFileSystem):
     def rm_file(self, path):
         path = self._strip_protocol(path)
         key, path =  path.split("/", 1)
-        self._call(f"delete/{key}/{path}", method="DELETE", binary=True)
+        self._call(f"{key}/delete/{path}", method="DELETE", binary=True)
 
     def _open(
         self,
@@ -87,19 +87,11 @@ class PyscriptFileSystem(AbstractFileSystem):
             range = (start, end + 1)
         else:
             range = None
-        return self._call(f"bytes/{key}/{relpath}", binary=True, range=range)
+        return self._call(f"{key}/bytes/{relpath}", binary=True, range=range)
 
     def pipe_file(self, path, value, mode="overwrite", **kwargs):
         key, relpath = self._split_path(path)
-        self._call(f"bytes/{key}/{relpath}", method="POST", data=value)
-
-    def reconfigure(self, config):
-        # only privileged identities can do this
-        if not "sources" in config:
-            raise ValueError("Bad config")
-        if not ["name" in _ and "path" in _ for _ in config["sources"]]:
-            raise ValueError("Bad config")
-        self._call(f"config", method="POST", json=config, binary=True)
+        self._call(f"{key}/bytes/{relpath}", method="POST", data=value)
 
 
 class JFile(AbstractBufferedFile):

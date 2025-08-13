@@ -1,9 +1,10 @@
-import os
+from json import dumps, loads
 import logging
+import os
 
-import fsspec.utils
+from pyscript import sync
 from fsspec.spec import AbstractFileSystem, AbstractBufferedFile
-from fsspec.implementations.http_sync import RequestsSessionShim
+import fsspec.utils
 
 logger = logging.getLogger("pyscript_fsspec_client")
 fsspec.utils.setup_logging(logger=logger)
@@ -16,41 +17,39 @@ class PyscriptFileSystem(AbstractFileSystem):
     def __init__(self, base_url=default_endpoint):
         super().__init__()
         self.base_url = base_url
-        self._session = None
+        self.session = sync.session
 
     def _split_path(self, path):
         key, *relpath = path.split("/", 1)
         return key, relpath[0] if relpath else ""
 
-    @property
-    def session(self):
-        if self._session is None:
-            try:
-                import js  # noqa: F401
-                self._session = RequestsSessionShim()
-            except (ImportError, ModuleNotFoundError):
-                import requests
-                self._session = requests.Session()
-        return self._session
-
-    def _call(self, path, method="GET", range=None, binary=False, data=None, json=None, **kw):
-        logger.debug("request: %s %s %s %s", path, method, kw, range)
+    def _call(self, path, method="GET", range=None, binary=False, data=0, json=0):
+        logger.debug("request: %s %s %s", path, method, range)
         headers = {}
+        if binary:
+            outmode = "bytes"
+        elif json:
+            outmode = "json"
+        else:
+            outmode = "text"
         if range:
             headers["Range"] = f"bytes={range[0]}-{range[1]}"
-        r = self.session.request(
-            method, f"{self.base_url}/{path}", params=kw, headers=headers,
-            data=data, json=json
-        )
-        if r.status_code == 404:
-            raise FileNotFoundError(path)
-        if r.status_code == 403:
-            raise PermissionError
-        r.raise_for_status()
-        if binary:
-            return r.content
-        j = r.json() if callable(r.json) else r.json  # inconsistency in shim - to fix!
-        return j["contents"]
+        try:
+            print(method, f"{self.base_url}/{path}", headers, data, json, outmode)
+            out = self.session(
+                method, f"{self.base_url}/{path}",
+                #hearder=headers, data=data, json=json, outmode=outmode
+            )
+            print(out)
+            if isinstance(out, tuple) and out[0] == "error":
+                num, txt = out[1:]
+                raise OSError(num, txt)
+        except OSError as e:
+            if e.errno == 404:
+                raise FileNotFoundError(path)
+            if e.errno == 403:
+                raise PermissionError
+            raise
 
     def ls(self, path, detail=True, **kwargs):
         path = self._strip_protocol(path)

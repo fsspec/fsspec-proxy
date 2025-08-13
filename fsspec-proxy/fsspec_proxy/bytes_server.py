@@ -20,7 +20,7 @@ async def lifespan(app: fastapi.FastAPI):
 app = fastapi.FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['https://martindurant.pyscriptapps.com'],
+    allow_origins=['*'],
     allow_methods=["GET", "POST", "DELETE", "OPTION", "PUT"],
     allow_credentials=True,
     allow_headers=["*"]

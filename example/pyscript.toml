@@ -1,0 +1,12 @@
+name = "example"
+description = "Usage for pyscript-fsspec-client"
+type = "app"
+author_name = "Martin Durant"
+author_email = "martin.durant@alumni.utoronto.ca"
+version = "latest"
+packages = []  # only the worker needs installs
+
+[files]
+"./pyscript_fsspec_client/__init__.py" = "./pyscript_fsspec_client/__init__.py"
+"./pyscript_fsspec_client/client.py" = "./pyscript_fsspec_client/client.py"
+"./pyscript_fsspec_client/io.py" = "./pyscript_fsspec_client/io.py"

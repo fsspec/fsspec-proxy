@@ -1,9 +1,10 @@
-import os
+from json import dumps, loads
 import logging
+import os
 
-import fsspec.utils
+from pyscript import sync, ffi
 from fsspec.spec import AbstractFileSystem, AbstractBufferedFile
-from fsspec.implementations.http_sync import RequestsSessionShim
+import fsspec.utils
 
 logger = logging.getLogger("pyscript_fsspec_client")
 fsspec.utils.setup_logging(logger=logger)
@@ -16,41 +17,35 @@ class PyscriptFileSystem(AbstractFileSystem):
     def __init__(self, base_url=default_endpoint):
         super().__init__()
         self.base_url = base_url
-        self._session = None
 
     def _split_path(self, path):
         key, *relpath = path.split("/", 1)
         return key, relpath[0] if relpath else ""
 
-    @property
-    def session(self):
-        if self._session is None:
-            try:
-                import js  # noqa: F401
-                self._session = RequestsSessionShim()
-            except (ImportError, ModuleNotFoundError):
-                import requests
-                self._session = requests.Session()
-        return self._session
-
-    def _call(self, path, method="GET", range=None, binary=False, data=None, json=None, **kw):
-        logger.debug("request: %s %s %s %s", path, method, kw, range)
+    def _call(self, path, method="GET", range=None, binary=False, data=0, json=0):
+        logger.debug("request: %s %s %s", path, method, range)
         headers = {}
+        if binary:
+            outmode = "bytes"
+        elif json:
+            outmode = "json"
+        else:
+            outmode = "text"
         if range:
             headers["Range"] = f"bytes={range[0]}-{range[1]}"
-        r = self.session.request(
-            method, f"{self.base_url}/{path}", params=kw, headers=headers,
-            data=data, json=json
+        if data:
+            data = memoryview(data)
+            outmode = None
+        out = sync.session(
+            method, f"{self.base_url}/{path}", ffi.to_js(data),
+            ffi.to_js(headers), outmode
         )
-        if r.status_code == 404:
-            raise FileNotFoundError(path)
-        if r.status_code == 403:
-            raise PermissionError
-        r.raise_for_status()
-        if binary:
-            return r.content
-        j = r.json() if callable(r.json) else r.json  # inconsistency in shim - to fix!
-        return j["contents"]
+        if isinstance(out, str) and out == "ISawAnError":
+            raise OSError(0, out)
+        if out is not None and not isinstance(out, str):
+            # may need a different conversion
+            out = bytes(out.to_py())
+        return out
 
     def ls(self, path, detail=True, **kwargs):
         path = self._strip_protocol(path)

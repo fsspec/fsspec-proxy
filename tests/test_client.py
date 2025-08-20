@@ -1,14 +1,17 @@
+
 import subprocess
 import time
+import threading
 
 import pytest
 import requests
 
 from pyscript_fsspec_client import client
+from pyscript.plugins.run import start_server
 
 
 @pytest.fixture(scope="session")
-def server():
+def proxy_server():
     # TODO: test config in "FSSPEC_PROXY_CONFIG" location
     P = subprocess.Popen(["fsspec-proxy"])
     s = "http://localhost:8000"
@@ -30,8 +33,8 @@ def server():
 
 
 @pytest.fixture()
-def fs(server):
-    return client.PyscriptFileSystem(server)
+def fs(proxy_server):
+    return client.PyscriptFileSystem(proxy_server)
 
 
 def test_file(fs):

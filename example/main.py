@@ -1,5 +1,5 @@
 from pyscript_fsspec_client import io
-from pyscript import PyWorker, ffi
+from pyscript import PyWorker
 
 config = {
     "packages": ["fsspec", "fastparquet"],
@@ -10,4 +10,5 @@ config = {
     }
 }
 pw = PyWorker("./worker.py", type="pyodide", config=config)
+
 pw.sync.session = io.request

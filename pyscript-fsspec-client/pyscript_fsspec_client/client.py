@@ -2,7 +2,7 @@ from json import dumps, loads
 import logging
 import os
 
-from pyscript import sync
+from pyscript import sync, ffi
 from fsspec.spec import AbstractFileSystem, AbstractBufferedFile
 import fsspec.utils
 
@@ -17,7 +17,6 @@ class PyscriptFileSystem(AbstractFileSystem):
     def __init__(self, base_url=default_endpoint):
         super().__init__()
         self.base_url = base_url
-        self.session = sync.session
 
     def _split_path(self, path):
         key, *relpath = path.split("/", 1)
@@ -34,22 +33,19 @@ class PyscriptFileSystem(AbstractFileSystem):
             outmode = "text"
         if range:
             headers["Range"] = f"bytes={range[0]}-{range[1]}"
-        try:
-            print(method, f"{self.base_url}/{path}", headers, data, json, outmode)
-            out = self.session(
-                method, f"{self.base_url}/{path}",
-                #hearder=headers, data=data, json=json, outmode=outmode
-            )
-            print(out)
-            if isinstance(out, tuple) and out[0] == "error":
-                num, txt = out[1:]
-                raise OSError(num, txt)
-        except OSError as e:
-            if e.errno == 404:
-                raise FileNotFoundError(path)
-            if e.errno == 403:
-                raise PermissionError
-            raise
+        if data:
+            data = memoryview(data)
+            outmode = None
+        out = sync.session(
+            method, f"{self.base_url}/{path}", ffi.to_js(data),
+            ffi.to_js(headers), outmode
+        )
+        if isinstance(out, str) and out == "ISawAnError":
+            raise OSError(0, out)
+        if out is not None and not isinstance(out, str):
+            # may need a different conversion
+            out = bytes(out.to_py())
+        return out
 
     def ls(self, path, detail=True, **kwargs):
         path = self._strip_protocol(path)

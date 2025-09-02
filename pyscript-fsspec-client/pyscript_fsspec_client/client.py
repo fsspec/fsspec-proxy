@@ -48,7 +48,6 @@ class PyscriptFileSystem(AbstractFileSystem):
         return out
 
     def ls(self, path, detail=True, **kwargs):
-        print(path)
         path = self._strip_protocol(path)
         key, *path =  path.split("/", 1)
         if key:
@@ -57,7 +56,6 @@ class PyscriptFileSystem(AbstractFileSystem):
         else:
             raise ValueError
 
-        print(out)
         if detail:
             return out
         return sorted(_["name"] for _ in out)

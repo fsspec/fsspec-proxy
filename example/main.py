@@ -2,7 +2,7 @@ from pyscript_fsspec_client import io
 from pyscript import PyWorker
 
 config = {
-    "packages": ["fsspec", "fastparquet"],
+    "packages": ["fsspec", "fastparquet", "pandas"],
     "files": {
         "./pyscript_fsspec_client/__init__.py": "./pyscript_fsspec_client/__init__.py",
         "./pyscript_fsspec_client/client.py": "./pyscript_fsspec_client/client.py",

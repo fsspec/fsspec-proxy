@@ -4,6 +4,10 @@ import os
 import sys
 
 
+# Alternative way to achieve the same thing, with extra options:
+# > uv run https://https://raw.githubusercontent.com/antocuni/env/refs/heads/master/bin/cors-server.py
+# or
+# > uvx pyscript run
 class ExtraHeadersHandler(http.server.SimpleHTTPRequestHandler):
     directory = os.path.dirname(__file__) if "__file__" in locals() else os.getcwd()
 

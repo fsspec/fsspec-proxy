@@ -48,14 +48,16 @@ class PyscriptFileSystem(AbstractFileSystem):
         return out
 
     def ls(self, path, detail=True, **kwargs):
+        print(path)
         path = self._strip_protocol(path)
         key, *path =  path.split("/", 1)
         if key:
             part = path[0] if path else ""
-            out = self._call(f"{key}/list/{part}")
+            out = loads(self._call(f"{key}/list/{part}"))["contents"]
         else:
             raise ValueError
 
+        print(out)
         if detail:
             return out
         return sorted(_["name"] for _ in out)

@@ -7,13 +7,13 @@ import pandas as pd
 import pyscript_fsspec_client.client
 
 fs = fsspec.filesystem("pyscript")
-print(fs.ls("local"))
+sync.console_print(str(fs.ls("local")))
 
 out = fs.cat("local/mdurant/code/fsspec-proxy/pyproject.toml")
-print("binary:", type(out), out)
+sync.console_print(str(("binary:", type(out), out)))
 
 out = fs.cat("local/mdurant/code/fsspec-proxy/pyproject.toml", start=0, end=10)
-print("binary:", type(out), out)
+sync.console_print(str(("binary:", type(out), out)))
 
 fs.pipe_file("local/mdurant/code/fsspec-proxy/OUTPUT", b"hello world")
 

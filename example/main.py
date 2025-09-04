@@ -11,4 +11,8 @@ config = {
 }
 pw = PyWorker("./worker.py", type="pyodide", config=config)
 
+def console_print(x):
+    print(x)
+
 pw.sync.session = io.request
+pw.sync.console_print = console_print

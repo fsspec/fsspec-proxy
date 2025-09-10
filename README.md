@@ -19,7 +19,8 @@ With a prepared environment including `s3fs`.
 $ git clone https://github.com/fsspec/fsspec-proxy
 $ cd fsspec-proxy
 $ pip install ./fsspec-proxy
-$ fsspec-proxy  # 
+$ fsspec-proxy
 $ # new console, same directory
-$ uvx pyscript run ./example --port 8899
+$ cd example
+$ uvx pyscript run . --port 8899
 ```

@@ -1,6 +1,7 @@
+"""An fsspec filesystem that proxies via pyscriptapps.com."""
+
 from json import dumps, loads
 import logging
-import os
 
 from pyscript import sync, ffi
 from fsspec.spec import AbstractFileSystem, AbstractBufferedFile
@@ -8,19 +9,55 @@ import fsspec.utils
 
 logger = logging.getLogger("pyscript_fsspec_client")
 fsspec.utils.setup_logging(logger=logger)
-default_endpoint =  os.getenv("FSSPEC_PROXY_URL", "http://127.0.0.1:8000")
 
 
 class PyscriptFileSystem(AbstractFileSystem):
+    """An fsspec filesystem that proxies via pyscriptapps.com."""
+
     protocol = "pyscript"
 
-    def __init__(self, base_url=default_endpoint):
+    def __init__(self, base_url):
         super().__init__()
         self.base_url = base_url
 
-    def _split_path(self, path):
-        key, *relpath = path.split("/", 1)
-        return key, relpath[0] if relpath else ""
+    # `AbstractFileSystem` protocol ############################################
+
+    def cat_file(self, path, start=None, end=None, **kw):
+        if start is not None and end is not None:
+            range = (start, end + 1)
+        else:
+            range = None
+        return self._call(f"bytes/{path}", binary=True, range=range)
+
+    def ls(self, path, detail=True, **kwargs):
+        path = self._strip_protocol(path)
+        out = loads(self._call(f"list/{path}"))["contents"]
+
+        if detail:
+            return out
+        return sorted(_["name"] for _ in out)
+
+    def pipe_file(self, path, value, mode="overwrite", **kwargs):
+        self._call(f"bytes/{path}", method="POST", data=value)
+
+    def rm_file(self, path):
+        path = self._strip_protocol(path)
+        self._call(f"delete/{path}", method="DELETE", binary=True)
+
+    def _open(
+            self,
+            path,
+            mode="rb",
+            block_size=None,
+            autocommit=True,
+            cache_options=None,
+            **kwargs,
+    ):
+        return JFile(
+            self, path, mode, block_size, autocommit, cache_options, **kwargs
+        )
+
+    # Internal #################################################################
 
     def _call(self, path, method="GET", range=None, binary=False, data=0, json=0):
         logger.debug("request: %s %s %s", path, method, range)
@@ -47,49 +84,16 @@ class PyscriptFileSystem(AbstractFileSystem):
             out = bytes(out.to_py())
         return out
 
-    def ls(self, path, detail=True, **kwargs):
-        path = self._strip_protocol(path)
-        key, *path =  path.split("/", 1)
-        if key:
-            part = path[0] if path else ""
-            out = loads(self._call(f"{key}/list/{part}"))["contents"]
-        else:
-            raise ValueError
-
-        if detail:
-            return out
-        return sorted(_["name"] for _ in out)
-
-    def rm_file(self, path):
-        path = self._strip_protocol(path)
-        key, path =  path.split("/", 1)
-        self._call(f"{key}/delete/{path}", method="DELETE", binary=True)
-
-    def _open(
-        self,
-        path,
-        mode="rb",
-        block_size=None,
-        autocommit=True,
-        cache_options=None,
-        **kwargs,
-    ):
-        return JFile(self, path, mode, block_size, autocommit, cache_options, **kwargs)
-
-    def cat_file(self, path, start=None, end=None, **kw):
-        key, relpath = self._split_path(path)
-        if start is not None and end is not None:
-            range = (start, end + 1)
-        else:
-            range = None
-        return self._call(f"{key}/bytes/{relpath}", binary=True, range=range)
-
-    def pipe_file(self, path, value, mode="overwrite", **kwargs):
-        key, relpath = self._split_path(path)
-        self._call(f"{key}/bytes/{relpath}", method="POST", data=value)
+    def _split_path(self, path):
+        key, *relpath = path.split("/", 1)
+        return key, relpath[0] if relpath else ""
 
 
 class JFile(AbstractBufferedFile):
+    """An fsspec buffered file implementation for the `pyscript` protocol."""
+
+    # `AbstractBufferedFile` protocol ##########################################
+
     def _fetch_range(self, start, end):
         return self.fs.cat_file(self.path, start, end)
 
@@ -98,5 +102,6 @@ class JFile(AbstractBufferedFile):
             self.fs.pipe_file(self.path, self.buffer.getvalue())
             return True
         return False
+
 
 fsspec.register_implementation("pyscript", PyscriptFileSystem)

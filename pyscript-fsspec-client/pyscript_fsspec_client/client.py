@@ -1,6 +1,6 @@
 """An fsspec filesystem that proxies via pyscriptapps.com."""
 
-from json import dumps, loads
+from json import loads
 import logging
 
 from pyscript import sync, ffi
@@ -16,7 +16,7 @@ class PyscriptFileSystem(AbstractFileSystem):
 
     protocol = "pyscript"
 
-    def __init__(self, base_url):
+    def __init__(self, base_url="http://0.0.0.0:8000/local"):
         super().__init__()
         self.base_url = base_url
 
@@ -49,14 +49,15 @@ class PyscriptFileSystem(AbstractFileSystem):
     ):
         logger.debug("cat_ranges: %s paths", len(paths))
         out = sync.batch(
-            [("GET", f"{self.base_url}/{path}", None,
-            ffi.to_js({"Range": f"bytes={s}-{e}"}), "binary")
-             for path, s, e in zip(paths, starts, ends)],
+            [{
+                "args": ("GET", f"{self.base_url}/bytes/{path}"),
+                "kwargs": {"headers": ffi.to_js({"Range": f"bytes={s}-{e + 1}"}), "outmode": "bytes"}
+             }
+            for path, s, e in zip(paths, starts, ends)],
         )
         return [(OSError(0, o) if isinstance(o, str) and o == "ISawAnError"
                  else bytes(o.to_py()))
                 for o in out]
-
 
     def _open(
             self,

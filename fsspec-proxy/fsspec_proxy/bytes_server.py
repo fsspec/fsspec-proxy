@@ -38,7 +38,7 @@ async def list_dir(key, path):
     except FileNotFoundError:
         raise fastapi.HTTPException(status_code=404, detail="Item not found")
     out = [
-        {"name": f"{key}/{o['name'].replace(fs_info['path'], '', 1).lstrip('/')}",
+        {"name": f"{o['name'].replace(fs_info['path'], '', 1).lstrip('/')}",
          "size": o["size"], "type": o["type"]}
         for o in out
     ]

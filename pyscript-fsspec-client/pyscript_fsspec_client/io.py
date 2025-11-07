@@ -1,5 +1,4 @@
-import json
-import pyscript
+import asyncio
 import js
 from pyodide import ffi, console
 
@@ -23,3 +22,10 @@ async def request(method, path, data=None, headers=None,
     if outmode is None:
         return
     return "ISawAnError"
+
+
+async def batch(requests, **kwargs):
+    return asyncio.gather(
+        *[request(*r, **kwargs) for r in requests],
+        return_exceptions=True
+    )

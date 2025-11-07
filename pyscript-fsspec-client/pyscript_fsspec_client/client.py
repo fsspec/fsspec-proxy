@@ -44,6 +44,20 @@ class PyscriptFileSystem(AbstractFileSystem):
         path = self._strip_protocol(path)
         self._call(f"delete/{path}", method="DELETE", binary=True)
 
+    def cat_ranges(
+        self, paths, starts, ends, max_gap=None, on_error="return", **kwargs
+    ):
+        logger.debug("cat_ranges: %s paths", len(paths))
+        out = sync.batch(
+            [("GET", f"{self.base_url}/{path}", None,
+            ffi.to_js({"Range": f"bytes={s}-{e}"}), "binary")
+             for path, s, e in zip(paths, starts, ends)],
+        )
+        return [(OSError(0, o) if isinstance(o, str) and o == "ISawAnError"
+                 else bytes(o.to_py()))
+                for o in out]
+
+
     def _open(
             self,
             path,

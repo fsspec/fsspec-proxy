@@ -15,4 +15,5 @@ def console_print(x):
     print(x)
 
 pw.sync.session = io.request
+pw.sync.batch = io.batch
 pw.sync.console_print = console_print

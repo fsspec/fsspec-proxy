@@ -16,7 +16,7 @@ default_config = b"""sources:
    path: file:///Users
    readonly: true
  - name: "Conda Stats"
-   path: "s3://anaconda-package-data/conda/hourly/"
+   path: "s3://anaconda-package-data/conda-stats/"
    kwargs:
      anon: True
  - name: "MyAnaconda"

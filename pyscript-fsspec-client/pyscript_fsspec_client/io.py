@@ -39,6 +39,8 @@ async def request(method, path, data=None, headers=None,
 
 async def batch(requests):
     requests = [r.to_py() for r in requests]
+    if LOGGING:
+        print("batch:", len(requests))
     out = asyncio.gather(
         *[request(*r["args"], **r["kwargs"]) for r in requests],
         return_exceptions=True
